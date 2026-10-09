@@ -155,16 +155,14 @@ fun HomePage(homeVM: HomeVM) {
                     }
 
                 }
-                    Row(modifier=Modifier.horizontalScroll(scroll)){
-                        LazyRow(
-                        ){
-                            items(Count){Count->
-                                Trending(trending)
-
+                        LazyRow {
+                            items(trending.orEmpty().size) { index ->
+                                Trending(
+                                    result = trending.orEmpty()[index]
+                                )
                             }
-
                         }
-                    }
+
             }
                 Spacer(modifier=Modifier.height(7.dp))
                 Column() {
@@ -288,7 +286,8 @@ fun TopRecomendation(){
 
 @Composable
 fun Trending(result: TrendingAnime){
-    var poster=""
+
+    var poster=result.poster
     Surface(modifier=Modifier
         .padding(horizontal =10.dp, vertical =4.dp)
         .height(220.dp)
@@ -325,8 +324,8 @@ fun Latest(){
 
 
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun make(){
-    HomePage()
-}
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//fun make(){
+//    HomePage()
+//}
