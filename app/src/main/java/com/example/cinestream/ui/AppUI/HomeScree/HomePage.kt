@@ -1,6 +1,7 @@
 package com.example.cinestream.ui.AppUI.HomeScree
 
 import android.R.attr.text
+import android.R.id.home
 import androidx.annotation.FontRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,6 +50,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.example.cinestream.R
+import com.example.cinestream.data.Info.TrendingAnime
+import com.example.cinestream.data.vm.HomeVM
 import com.example.cinestream.ui.AppUI.HomeScree.Surface
 
 val Primary = Color(0xFFFF2A54)       // Pink-red
@@ -64,7 +68,12 @@ val Border = Color(0xFF34353D)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomePage() {
+fun HomePage(homeVM: HomeVM) {
+
+    var response=homeVM.gettAllHomePageContent
+
+    var results=response?.results
+     var trending=results?.trending
     Scaffold(
         containerColor = Background,
 
@@ -147,8 +156,13 @@ fun HomePage() {
 
                 }
                     Row(modifier=Modifier.horizontalScroll(scroll)){
-                        for(i in 0..5){
-                        Trending()
+                        LazyRow(
+                        ){
+                            items(Count){Count->
+                                Trending(trending)
+
+                            }
+
                         }
                     }
             }
@@ -273,7 +287,7 @@ fun TopRecomendation(){
 }
 
 @Composable
-fun Trending(){
+fun Trending(result: TrendingAnime){
     var poster=""
     Surface(modifier=Modifier
         .padding(horizontal =10.dp, vertical =4.dp)
