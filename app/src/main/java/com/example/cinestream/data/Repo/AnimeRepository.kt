@@ -9,7 +9,7 @@ class AnimeRepository(private val getMessage: AnimeApi ) {
         val response = getMessage.getHome()
 
         if (!response.isSuccessful) {
-            throw Exception("API error: ${response.code()}/n ${response.body()}")
+            throw Exception("API error: ${response.code()}\n ${response.body()}")
         }
 
         return response.body()
