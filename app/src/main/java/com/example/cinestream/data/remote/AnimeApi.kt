@@ -8,5 +8,5 @@ import retrofit2.http.GET
 interface AnimeApi {
 
     @GET("api/home")
-    suspend fun getHome(): Response<HomeResponse>
+    suspend fun getHome(): Response<List<HomeResponse>>
 }
