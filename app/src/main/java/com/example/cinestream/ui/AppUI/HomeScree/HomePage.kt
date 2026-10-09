@@ -110,6 +110,7 @@ fun HomePage() {
 
     ) {paddingValues ->
         val scroll= rememberScrollState()
+        val latestScroll=rememberScrollState()
         Box(modifier = Modifier.fillMaxSize()
             .padding(paddingValues)
             .background(Background)
@@ -177,7 +178,7 @@ fun HomePage() {
                         }
 
                     }
-                    Row(modifier=Modifier.horizontalScroll(scroll)){
+                    Row(modifier=Modifier.horizontalScroll(latestScroll)){
                         for(i in 0..5){
                             Latest()
 
