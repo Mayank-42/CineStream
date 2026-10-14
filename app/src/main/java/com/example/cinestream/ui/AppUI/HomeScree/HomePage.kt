@@ -90,6 +90,7 @@ val TextPrimary = Color(0xFFF5F3F4)   // Warm white
 val TextSecondary = Color(0xFFA7A5AA) // Muted gray
 val Border = Color(0xFF34353D)
 
+    var openTopAppBar =true
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePage(homeVM: HomeVM) {
@@ -99,49 +100,55 @@ fun HomePage(homeVM: HomeVM) {
     var results=response?.results
      var trending=results?.trending
     var openWeb by rememberSaveable{ mutableStateOf(false) }
+
     Scaffold(
         containerColor = Background,
 
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Background
-                ),
-                title ={
-                    Text(
-                        text="CINESTREAM",
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 2.7.sp,
-                        color=Color.White,
-                        modifier=Modifier.clickable{
-                            openWeb=!openWeb
-                        }
-                    )
-                },
-                actions = {
-                    Row(){
-                        IconButton(onClick = {}){
-                            Icon(
-                                imageVector= Icons.Default.Search,
-                                contentDescription = null
-                            )
-                        }
-                        IconButton(onClick = {},
-                            modifier=Modifier.clip(CircleShape)
-                                .background(Primary)
-                            ){
-                            Icon(
-                                imageVector= Icons.Default.Person,
-                                contentDescription = null,
-                                tint=Color.White,
-                                modifier=Modifier.clip(CircleShape)
-                                    .background(Color(0xFFFF2A54))
-                            )
+
+
+            topBar = {
+        if(openTopAppBar) {
+                TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Background
+                    ),
+                    title = {
+                        Text(
+                            text = "CINESTREAM",
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 2.7.sp,
+                            color = Color.White,
+                            modifier = Modifier.clickable {
+                                openWeb = !openWeb
+                            }
+                        )
+                    },
+                    actions = {
+                        Row() {
+                            IconButton(onClick = {}) {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = null
+                                )
+                            }
+                            IconButton(
+                                onClick = {},
+                                modifier = Modifier.clip(CircleShape)
+                                    .background(Primary)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.clip(CircleShape)
+                                        .background(Color(0xFFFF2A54))
+                                )
+                            }
                         }
                     }
-                }
-            )
+                )
 
+            }
         },
 
 
@@ -400,11 +407,11 @@ fun WebView(onClose: () -> Unit) {
         mutableStateOf<WebView?>(null)
     }
 
-    var fullscreenView by remember {
+    var fullscreenView by rememberSaveable() {
         mutableStateOf<View?>(null)
     }
 
-    var customViewCallback by remember {
+    var customViewCallback by rememberSaveable() {
         mutableStateOf<WebChromeClient.CustomViewCallback?>(null)
     }
     val context = LocalContext.current
@@ -421,7 +428,7 @@ fun WebView(onClose: () -> Unit) {
 
         currentContext as? Activity
     }
-    var previousOrientation by remember {
+    var previousOrientation by rememberSaveable() {
         mutableIntStateOf(
             activity?.requestedOrientation
                 ?: ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
@@ -497,42 +504,40 @@ fun WebView(onClose: () -> Unit) {
 
                             view.evaluateJavascript(
                                 """
-                                (() => {
-                                    const css = `
-                                        .watch-shell {
-                                            height: auto !important;
-                                            min-height: 240px !important;
-                                        }
+    (() => {
+        const text = document.body?.innerText || "";
+        const jawanVisible = text.toLowerCase().includes("jawan");
 
-                                        .gaia-static-player,
-                                        .svp {
-                                            height: 240px !important;
-                                        }
+        const info = {
+            pageUrl: location.href,
+            pageTitle: document.title,
+            bodyContainsJawan: jawanVisible,
+            bodyTextPreview: text.slice(0, 1500),
+            visibleElements: [...document.querySelectorAll("a, article, [class*='search'], [class*='result']")]
+                .filter(el => {
+                    const r = el.getBoundingClientRect();
+                    const s = getComputedStyle(el);
+                    return r.width > 0 &&
+                           r.height > 0 &&
+                           s.display !== "none" &&
+                           s.visibility !== "hidden";
+                })
+                .slice(0, 40)
+                .map(el => ({
+                    tag: el.tagName,
+                    className: typeof el.className === "string" ? el.className : "",
+                    text: (el.innerText || "").trim().slice(0, 120)
+                }))
+        };
 
-                                        video.svp-video {
-                                            display: block !important;
-                                            width: 100% !important;
-                                            height: 240px !important;
-                                        }
-                                    `;
+        return JSON.stringify(info);
+    })();
+    """.trimIndent()
+                            ) { result ->
+                                android.util.Log.d("GaiaflixSearch", result ?: "No result")
+                            }
 
-                                    let style = document.getElementById(
-                                        'cinestream-player-fix'
-                                    );
 
-                                    if (!style) {
-                                        style = document.createElement('style');
-                                        style.id = 'cinestream-player-fix';
-                                        document.head.appendChild(style);
-                                    }
-
-                                    style.textContent = css;
-                                })();
-                                """.trimIndent(),
-                                null
-                            )
-                        }
-                    }
 
                     webChromeClient = object : WebChromeClient() {
 
@@ -553,19 +558,22 @@ fun WebView(onClose: () -> Unit) {
 
                             fullscreenView = view
                             customViewCallback = callback
+                            openTopAppBar=false
                         }
 
                         override fun onHideCustomView() {
                             fullscreenView = null
                             customViewCallback = null
                             activity?.requestedOrientation = previousOrientation
+                            openTopAppBar=true
                         }
                     }
 
                     loadUrl("https://gaiaflix.live/")
                 }
             }
-        )
+
+
 
         fullscreenView?.let { view ->
             AndroidView(
