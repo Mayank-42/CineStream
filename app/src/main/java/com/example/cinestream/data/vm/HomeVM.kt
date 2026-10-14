@@ -1,5 +1,6 @@
 package com.example.cinestream.data.vm
 
+import android.util.Log
 import android.view.View
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,13 +19,33 @@ class HomeVM(private val repo: AnimeRepository)
 
     var gettAllHomePageContent by mutableStateOf<HomeResponse?>(null)
         private set
+    var errorMessage by mutableStateOf<String?>(null)
+        private set
 
-    fun gettALltheData(){
-        viewModelScope.launch{
-            val response=repo.getTHeHomePage()
-            gettAllHomePageContent = response
+    fun gettALltheData() {
+        viewModelScope.launch {
+            try {
+                Log.d("HomeVM", "Starting API request")
+
+                val response = repo.getTHeHomePage()
+
+                gettAllHomePageContent = response
+                response.results.trending.forEach { anime ->
+                    Log.d(
+                        "PosterDebug",
+                        "Title: ${anime.title}, Poster: ${anime.poster}"
+                    )
+                }
+
+                Log.d(
+                    "HomeVM",
+                    "API success: ${response.success}, " +
+                            "trending count: ${response.results.trending.size}"
+                )
+            } catch (e: Exception) {
+                Log.e("HomeVM", "API request failed", e)
+            }
         }
-
     }
 }
 class HomeVMFactory(

@@ -2,8 +2,11 @@ package com.example.cinestream.ui.AppUI.HomeScree
 
 import android.R.attr.text
 import android.R.id.home
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.annotation.FontRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,12 +38,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -48,6 +57,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import coil3.compose.AsyncImage
 import com.example.cinestream.R
 import com.example.cinestream.data.Info.TrendingAnime
@@ -74,6 +84,7 @@ fun HomePage(homeVM: HomeVM) {
 
     var results=response?.results
      var trending=results?.trending
+    var openWeb by rememberSaveable{ mutableStateOf(false) }
     Scaffold(
         containerColor = Background,
 
@@ -87,7 +98,10 @@ fun HomePage(homeVM: HomeVM) {
                         text="CINESTREAM",
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 2.7.sp,
-                        color=Color.White
+                        color=Color.White,
+                        modifier=Modifier.clickable{
+                            openWeb=!openWeb
+                        }
                     )
                 },
                 actions = {
@@ -155,13 +169,18 @@ fun HomePage(homeVM: HomeVM) {
                     }
 
                 }
-                        LazyRow {
-                            items(trending.orEmpty().size) { index ->
-                                Trending(
-                                    result = trending.orEmpty()[index]
-                                )
+                    LazyRow {
+                        items(trending.orEmpty()) { anime ->
+                            Column(){
+                            Trending(result = anime)
+//                                Text(
+//                                    anime.title,
+//                                    color=TextPrimary
+//                                )
                             }
+
                         }
+                    }
 
             }
                 Spacer(modifier=Modifier.height(7.dp))
@@ -200,6 +219,9 @@ fun HomePage(homeVM: HomeVM) {
 
             }
 
+            if(openWeb){
+                WebView()
+            }
 
         }
     }
@@ -297,7 +319,21 @@ fun Trending(result: TrendingAnime){
             model=poster,
             contentDescription = null,
             placeholder = painterResource(R.drawable.movie),
-            error = painterResource(R.drawable.movie)
+            error = painterResource(R.drawable.movie),
+            onError = { state ->
+                android.util.Log.e(
+                    "PosterDebug",
+                    "Image failed: ${result.title}, URL: ${result.poster}",
+                    state.result.throwable
+                )
+            },
+            onSuccess = {
+                android.util.Log.d(
+                    "PosterDebug",
+                    "Image loaded: ${result.title}"
+                )
+            },
+            contentScale = ContentScale.Crop
 
         )
     }
@@ -319,6 +355,22 @@ fun Latest(){
 
         )
     }
+}
+@Composable
+fun WebView(){
+    Box(modifier=Modifier.fillMaxSize()){
+        AndroidView(
+            factory={context->
+                WebView(context).apply{
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
+                    webViewClient= WebViewClient()
+                    loadUrl("https://gaiaflix.live/")
+                }
+            }
+        )
+    }
+
 }
 
 
