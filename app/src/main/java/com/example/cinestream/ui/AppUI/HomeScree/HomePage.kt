@@ -2,10 +2,17 @@ package com.example.cinestream.ui.AppUI.HomeScree
 
 import android.R.attr.text
 import android.R.id.home
+import android.app.Activity
+import android.content.ContextWrapper
+import android.content.pm.ActivityInfo
 import android.net.Uri
+import android.view.View
+import android.view.ViewGroup
+import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import androidx.activity.compose.BackHandler
 import androidx.annotation.FontRes
 import androidx.compose.foundation.background
@@ -42,6 +49,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -54,6 +62,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.modifier.modifierLocalConsumer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -67,6 +76,7 @@ import com.example.cinestream.R
 import com.example.cinestream.data.Info.TrendingAnime
 import com.example.cinestream.data.vm.HomeVM
 import com.example.cinestream.ui.AppUI.HomeScree.Surface
+
 
 val Primary = Color(0xFFFF2A54)       // Pink-red
 val Secondary = Color(0xFFFF9AAE)     // Soft pink
@@ -383,25 +393,60 @@ fun Latest(){
 
 
 
+
 @Composable
 fun WebView(onClose: () -> Unit) {
     var webView by remember {
         mutableStateOf<WebView?>(null)
     }
 
-    BackHandler(
-        enabled = webView?.canGoBack() == true
-    ) {
-        val currentWebView = webView
-//        webView.canGoBack()
+    var fullscreenView by remember {
+        mutableStateOf<View?>(null)
+    }
 
-        if (currentWebView != null && currentWebView.canGoBack()) {
-            currentWebView.goBack()
+    var customViewCallback by remember {
+        mutableStateOf<WebChromeClient.CustomViewCallback?>(null)
+    }
+    val context = LocalContext.current
+
+    val activity = remember(context) {
+        var currentContext = context
+
+        while (
+            currentContext is ContextWrapper &&
+            currentContext !is Activity
+        ) {
+            currentContext = currentContext.baseContext
+        }
+
+        currentContext as? Activity
+    }
+    var previousOrientation by remember {
+        mutableIntStateOf(
+            activity?.requestedOrientation
+                ?: ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        )
+    }
+
+    BackHandler {
+        if (fullscreenView != null) {
+            customViewCallback?.onCustomViewHidden()
+            fullscreenView = null
+            customViewCallback = null
         } else {
-            onClose()
+            val currentWebView = webView
+
+            if (currentWebView != null && currentWebView.canGoBack()) {
+                currentWebView.goBack()
+            } else {
+                onClose()
+            }
         }
     }
-    Box(modifier = Modifier.fillMaxSize()) {
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { context ->
@@ -419,7 +464,6 @@ fun WebView(onClose: () -> Unit) {
 
                             return when (scheme) {
                                 "http", "https" -> false
-
                                 else -> {
                                     android.util.Log.d(
                                         "WebViewNavigation",
@@ -434,9 +478,7 @@ fun WebView(onClose: () -> Unit) {
                             view: WebView,
                             request: WebResourceRequest
                         ): Boolean {
-                            return handleNavigation(
-                                request.url.toString()
-                            )
+                            return handleNavigation(request.url.toString())
                         }
 
                         @Suppress("DEPRECATION")
@@ -492,12 +534,75 @@ fun WebView(onClose: () -> Unit) {
                         }
                     }
 
+                    webChromeClient = object : WebChromeClient() {
+
+                        override fun onShowCustomView(
+                            view: View,
+                            callback: CustomViewCallback
+                        ) {
+                            if (fullscreenView != null) {
+                                callback.onCustomViewHidden()
+                                return
+                            }
+                            previousOrientation =
+                                activity?.requestedOrientation
+                                    ?: ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+
+                            activity?.requestedOrientation =
+                                ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+
+                            fullscreenView = view
+                            customViewCallback = callback
+                        }
+
+                        override fun onHideCustomView() {
+                            fullscreenView = null
+                            customViewCallback = null
+                            activity?.requestedOrientation = previousOrientation
+                        }
+                    }
+
                     loadUrl("https://gaiaflix.live/")
                 }
             }
         )
+
+        fullscreenView?.let { view ->
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = { context ->
+                    FrameLayout(context).apply {
+                        setBackgroundColor(android.graphics.Color.BLACK)
+
+                        (view.parent as? ViewGroup)?.removeView(view)
+
+                        addView(
+                            view,
+                            FrameLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
+                        )
+                    }
+                },
+                update = { container ->
+                    if (view.parent !== container) {
+                        (view.parent as? ViewGroup)?.removeView(view)
+
+                        container.addView(
+                            view,
+                            FrameLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
+                        )
+                    }
+                }
+            )
+        }
     }
 }
+
 
 
 
