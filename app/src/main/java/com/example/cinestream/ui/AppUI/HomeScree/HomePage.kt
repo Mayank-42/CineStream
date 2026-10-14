@@ -2,6 +2,8 @@ package com.example.cinestream.ui.AppUI.HomeScree
 
 import android.R.attr.text
 import android.R.id.home
+import android.net.Uri
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.FontRes
@@ -356,22 +358,126 @@ fun Latest(){
         )
     }
 }
+//@Composable
+//fun WebView(){
+//    Box(modifier=Modifier.fillMaxSize()){
+//        AndroidView(
+//            factory={context->
+//                WebView(context).apply{
+//                    settings.javaScriptEnabled = true
+//                    settings.domStorageEnabled = true
+//                    webViewClient= WebViewClient()
+//                    loadUrl("https://gaiaflix.live/")
+//                }
+//            }
+//        )
+//    }
+//
+//}
+
+
+
 @Composable
-fun WebView(){
-    Box(modifier=Modifier.fillMaxSize()){
+fun WebView() {
+    Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
-            factory={context->
-                WebView(context).apply{
+            modifier = Modifier.fillMaxSize(),
+            factory = { context ->
+                WebView(context).apply {
+
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
-                    webViewClient= WebViewClient()
+                    settings.mediaPlaybackRequiresUserGesture = false
+
+                    webViewClient = object : WebViewClient() {
+
+                        private fun handleNavigation(url: String): Boolean {
+                            val scheme = Uri.parse(url).scheme?.lowercase()
+
+                            return when (scheme) {
+                                "http", "https" -> false
+
+                                else -> {
+                                    android.util.Log.d(
+                                        "WebViewNavigation",
+                                        "Blocked URL: $url"
+                                    )
+                                    true
+                                }
+                            }
+                        }
+
+                        override fun shouldOverrideUrlLoading(
+                            view: WebView,
+                            request: WebResourceRequest
+                        ): Boolean {
+                            return handleNavigation(
+                                request.url.toString()
+                            )
+                        }
+
+                        @Suppress("DEPRECATION")
+                        override fun shouldOverrideUrlLoading(
+                            view: WebView,
+                            url: String
+                        ): Boolean {
+                            return handleNavigation(url)
+                        }
+
+                        override fun onPageFinished(
+                            view: WebView,
+                            url: String
+                        ) {
+                            super.onPageFinished(view, url)
+
+                            view.evaluateJavascript(
+                                """
+                                (() => {
+                                    const css = `
+                                        .watch-shell {
+                                            height: auto !important;
+                                            min-height: 240px !important;
+                                        }
+
+                                        .gaia-static-player,
+                                        .svp {
+                                            height: 240px !important;
+                                        }
+
+                                        video.svp-video {
+                                            display: block !important;
+                                            width: 100% !important;
+                                            height: 240px !important;
+                                        }
+                                    `;
+
+                                    let style = document.getElementById(
+                                        'cinestream-player-fix'
+                                    );
+
+                                    if (!style) {
+                                        style = document.createElement('style');
+                                        style.id = 'cinestream-player-fix';
+                                        document.head.appendChild(style);
+                                    }
+
+                                    style.textContent = css;
+                                })();
+                                """.trimIndent(),
+                                null
+                            )
+                        }
+                    }
+
                     loadUrl("https://gaiaflix.live/")
                 }
             }
         )
     }
-
 }
+
+
+
 
 
 

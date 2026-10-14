@@ -18,6 +18,7 @@ import com.example.cinestream.data.vm.HomeVM
 import com.example.cinestream.data.vm.HomeVMFactory
 import com.example.cinestream.ui.AppUI.HomeScree.HomePage
 import com.example.cinestream.ui.theme.CineStreamTheme
+import android.webkit.WebView
 
 class MainActivity : ComponentActivity() {
 
@@ -25,7 +26,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+            WebView.setWebContentsDebuggingEnabled(true)
         setContent {
+
             CineStreamTheme {
 
                 val homeVM: HomeVM = viewModel(
