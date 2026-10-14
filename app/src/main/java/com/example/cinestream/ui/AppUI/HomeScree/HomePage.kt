@@ -6,6 +6,7 @@ import android.net.Uri
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.compose.BackHandler
 import androidx.annotation.FontRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,6 +43,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -221,8 +223,12 @@ fun HomePage(homeVM: HomeVM) {
 
             }
 
-            if(openWeb){
-                WebView()
+            if (openWeb) {
+                WebView(
+                    onClose = {
+                        openWeb = false
+                    }
+                )
             }
 
         }
@@ -378,12 +384,29 @@ fun Latest(){
 
 
 @Composable
-fun WebView() {
+fun WebView(onClose: () -> Unit) {
+    var webView by remember {
+        mutableStateOf<WebView?>(null)
+    }
+
+    BackHandler(
+        enabled = webView?.canGoBack() == true
+    ) {
+        val currentWebView = webView
+//        webView.canGoBack()
+
+        if (currentWebView != null && currentWebView.canGoBack()) {
+            currentWebView.goBack()
+        } else {
+            onClose()
+        }
+    }
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { context ->
                 WebView(context).apply {
+                    webView = this
 
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
