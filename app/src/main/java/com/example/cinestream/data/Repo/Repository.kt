@@ -1,11 +1,12 @@
 package com.example.cinestream.data.Repo
 
 import com.example.cinestream.data.Info.Trending
+import com.example.cinestream.data.Info.TrendingResponse
 import com.example.cinestream.data.remote.Api
 
 class Repository(private val getMessage: Api ) {
 
-    suspend fun getTHeHomePage(): Trending {
+    suspend fun getTHeHomePage(): TrendingResponse {
         val response = getMessage.getHome()
 
         if (!response.isSuccessful) {

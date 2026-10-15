@@ -84,7 +84,8 @@ var openTopAppBar = true
 @Composable
 fun HomePage(homeVM: HomeVM) {
 
-    var response = homeVM.gettAllHomePageContent
+    var response = homeVM.gettAllHomePageContent?.results
+
 
     var openWeb by rememberSaveable {
         mutableStateOf(false)
@@ -187,7 +188,7 @@ fun HomePage(homeVM: HomeVM) {
                     }
 
                     LazyRow {
-                        items(response.orEmpty()) { anime ->
+                        items(response) { anime ->
                             Column {
                                 Trending(result = anime)
                             }
