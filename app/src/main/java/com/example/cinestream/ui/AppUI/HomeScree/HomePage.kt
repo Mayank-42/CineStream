@@ -1,5 +1,6 @@
 package com.example.cinestream.ui.AppUI.HomeScree
 
+import android.R.attr.font
 import android.app.Activity
 import android.content.ContextWrapper
 import android.content.pm.ActivityInfo
@@ -64,6 +65,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import coil3.compose.AsyncImage
 import com.example.cinestream.R
 import com.example.cinestream.data.Info.Trending
+import com.example.cinestream.data.Info.UpcomingMovie
+import com.example.cinestream.data.Info.UpcomingMoviesResponse
 import com.example.cinestream.data.vm.HomeVM
 
 
@@ -86,6 +89,8 @@ var openTopAppBar = true
 fun HomePage(homeVM: HomeVM) {
 
     var response = homeVM.gettAllHomePageContent?.results
+
+    var upcomingresponse = homeVM.gettAllUpcomingContent?.results
 
 
 
@@ -227,11 +232,11 @@ fun HomePage(homeVM: HomeVM) {
                         }
                     }
 
-                    Row(
-                        modifier = Modifier.horizontalScroll(latestScroll)
-                    ) {
-                        for (i in 0..5) {
-                            Latest()
+                    LazyRow {
+                        items(upcomingresponse.orEmpty()) { anime ->
+                            Column {
+                                Latest(result = anime)
+                            }
                         }
                     }
                 }
@@ -363,20 +368,33 @@ fun Trending(result: Trending) {
             .height(220.dp)
             .width(120.dp)
     ) {
+        Column(Modifier.fillMaxSize()) {
         AsyncImage(
             model = poster,
             contentDescription = null,
             placeholder = painterResource(R.drawable.movie),
             error = painterResource(R.drawable.movie),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(170.dp)
         )
+            Spacer(modifier=Modifier.padding(top=5.dp))
+            Text(
+                text=result.title,
+                color = TextPrimary,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.ExtraBold
+
+            )
+        }
     }
 }
 
 @Composable
-fun Latest() {
+fun Latest(result: UpcomingMovie) {
 
-    var poster = ""
+    var poster = result.backdropPath
 
     Surface(
         modifier = Modifier
@@ -384,12 +402,19 @@ fun Latest() {
             .height(290.dp)
             .width(290.dp)
     ) {
-        AsyncImage(
-            model = poster,
-            contentDescription = null,
-            placeholder = painterResource(R.drawable.movie),
-            error = painterResource(R.drawable.movie)
-        )
+        Column() {
+
+            AsyncImage(
+                model = poster,
+                contentDescription = null,
+                placeholder = painterResource(R.drawable.movie),
+                error = painterResource(R.drawable.movie)
+            )
+            Spacer(modifier=Modifier.padding(top=5.dp))
+            Text(
+                text=result.originalTitle
+            )
+        }
     }
 }
 

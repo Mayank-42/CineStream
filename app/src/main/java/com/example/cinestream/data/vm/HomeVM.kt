@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.cinestream.data.Info.Trending
 import com.example.cinestream.data.Info.TrendingResponse
+import com.example.cinestream.data.Info.UpcomingMoviesResponse
 import com.example.cinestream.data.Repo.Repository
 import com.example.cinestream.data.remote.Api
 import kotlinx.coroutines.flow.Flow
@@ -21,7 +22,8 @@ class HomeVM(private val repo: Repository)
 
 
     var gettAllHomePageContent by mutableStateOf<TrendingResponse?>(null)
-
+        private set
+    var gettAllUpcomingContent by mutableStateOf<UpcomingMoviesResponse?>(null)
         private set
     var errorMessage by mutableStateOf<String?>(null)
         private set
@@ -35,11 +37,21 @@ class HomeVM(private val repo: Repository)
             } catch (e: Exception) {
                 errorMessage = e.message ?: "Something went wrong"
             }
-
-
-
         }
     }
+    fun gettUpcomming() {
+        viewModelScope.launch {
+
+            try {
+                gettAllUpcomingContent = repo.getUpcomming()
+                errorMessage = null
+            } catch (e: Exception) {
+                errorMessage = e.message ?: "Something went wrong"
+            }
+        }
+    }
+
+
 }
 class HomeVMFactory(
     private val api: Api
