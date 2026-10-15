@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 class Repository(private val getMessage: Api ) {
 
-    suspend fun getTHeHomePage(): Flow<TrendingResponse> {
+    suspend fun getTHeHomePage(): TrendingResponse{
         val response = getMessage.getHome()
 
         if (!response.isSuccessful) {

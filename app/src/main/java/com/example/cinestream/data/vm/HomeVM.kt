@@ -20,7 +20,7 @@ class HomeVM(private val repo: Repository)
     : ViewModel(){
 
 
-    var gettAllHomePageContent by mutableStateOf<Flow<TrendingResponse>?>(null)
+    var gettAllHomePageContent by mutableStateOf<TrendingResponse?>(null)
 
         private set
     var errorMessage by mutableStateOf<String?>(null)

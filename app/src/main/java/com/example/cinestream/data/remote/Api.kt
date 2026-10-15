@@ -10,5 +10,5 @@ import retrofit2.http.GET
 interface Api {
 
     @GET("trending/movie/week")
-    suspend fun getHome(): Response<Flow<TrendingResponse>>
+    suspend fun getHome(): Response<TrendingResponse>
 }

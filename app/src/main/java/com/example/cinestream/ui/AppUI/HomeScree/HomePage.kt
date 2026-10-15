@@ -85,7 +85,7 @@ var openTopAppBar = true
 @Composable
 fun HomePage(homeVM: HomeVM) {
 
-    var response = homeVM.gettAllHomePageContent
+    var response = homeVM.gettAllHomePageContent?.results
 
 
 
@@ -352,7 +352,9 @@ fun TopRecomendation() {
 @Composable
 fun Trending(result: Trending) {
 
-    var poster = result.backdropPath
+    val poster = result.posterPath?.let {
+        "https://image.tmdb.org/t/p/w500$it"
+    }
 //    result.
 
     Surface(
