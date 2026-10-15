@@ -3,10 +3,11 @@ package com.example.cinestream.data.Repo
 import com.example.cinestream.data.Info.Trending
 import com.example.cinestream.data.Info.TrendingResponse
 import com.example.cinestream.data.remote.Api
+import kotlinx.coroutines.flow.Flow
 
 class Repository(private val getMessage: Api ) {
 
-    suspend fun getTHeHomePage(): TrendingResponse {
+    suspend fun getTHeHomePage(): Flow<TrendingResponse> {
         val response = getMessage.getHome()
 
         if (!response.isSuccessful) {

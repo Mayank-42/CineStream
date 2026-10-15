@@ -12,6 +12,7 @@ import com.example.cinestream.data.Info.Trending
 import com.example.cinestream.data.Info.TrendingResponse
 import com.example.cinestream.data.Repo.Repository
 import com.example.cinestream.data.remote.Api
+import kotlinx.coroutines.flow.Flow
 
 import kotlinx.coroutines.launch
 
@@ -19,7 +20,8 @@ class HomeVM(private val repo: Repository)
     : ViewModel(){
 
 
-    var gettAllHomePageContent by mutableStateOf<TrendingResponse?>(null)
+    var gettAllHomePageContent by mutableStateOf<Flow<TrendingResponse>?>(null)
+
         private set
     var errorMessage by mutableStateOf<String?>(null)
         private set

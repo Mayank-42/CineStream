@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -84,7 +85,8 @@ var openTopAppBar = true
 @Composable
 fun HomePage(homeVM: HomeVM) {
 
-    var response = homeVM.gettAllHomePageContent?.results
+    var response = homeVM.gettAllHomePageContent
+
 
 
     var openWeb by rememberSaveable {
@@ -188,7 +190,7 @@ fun HomePage(homeVM: HomeVM) {
                     }
 
                     LazyRow {
-                        items(response) { anime ->
+                        items(response.orEmpty()) { anime ->
                             Column {
                                 Trending(result = anime)
                             }
@@ -350,7 +352,8 @@ fun TopRecomendation() {
 @Composable
 fun Trending(result: Trending) {
 
-    var poster = result.poster
+    var poster = result.backdropPath
+//    result.
 
     Surface(
         modifier = Modifier
@@ -363,7 +366,6 @@ fun Trending(result: Trending) {
             contentDescription = null,
             placeholder = painterResource(R.drawable.movie),
             error = painterResource(R.drawable.movie),
-            ,
             contentScale = ContentScale.Crop
         )
     }
