@@ -1,7 +1,19 @@
+import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use {
+        localProperties.load(it)
+    }
+}
+
+val tmdbReadAccessToken =
+    localProperties.getProperty("TMDB_READ_ACCESS_TOKEN", "")
 
 android {
     namespace = "com.example.cinestream"
@@ -15,7 +27,11 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
-
+        buildConfigField(
+            "String",
+            "TMDB_READ_ACCESS_TOKEN",
+            "\"$tmdbReadAccessToken\""
+        )
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -32,11 +48,13 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
