@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.cinestream.data.Info.PopularMovie
 import com.example.cinestream.data.Info.Trending
 import com.example.cinestream.data.Info.TrendingResponse
 import com.example.cinestream.data.Info.UpcomingMoviesResponse
@@ -24,6 +25,8 @@ class HomeVM(private val repo: Repository)
     var gettAllHomePageContent by mutableStateOf<TrendingResponse?>(null)
         private set
     var gettAllUpcomingContent by mutableStateOf<UpcomingMoviesResponse?>(null)
+        private set
+    var gettAllPopularContent by mutableStateOf<PopularMovie?>(null)
         private set
     var errorMessage by mutableStateOf<String?>(null)
         private set
@@ -44,6 +47,17 @@ class HomeVM(private val repo: Repository)
 
             try {
                 gettAllUpcomingContent = repo.getUpcomming()
+                errorMessage = null
+            } catch (e: Exception) {
+                errorMessage = e.message ?: "Something went wrong"
+            }
+        }
+    }
+    fun gettPopular() {
+        viewModelScope.launch {
+
+            try {
+                gettAllPopularContent = repo.getPopular()
                 errorMessage = null
             } catch (e: Exception) {
                 errorMessage = e.message ?: "Something went wrong"

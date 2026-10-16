@@ -1,5 +1,6 @@
 package com.example.cinestream.data.remote
 
+import com.example.cinestream.data.Info.PopularMovie
 import com.example.cinestream.data.Info.Trending
 import com.example.cinestream.data.Info.TrendingResponse
 import com.example.cinestream.data.Info.UpcomingMoviesResponse
@@ -15,4 +16,7 @@ interface Api {
 
     @GET("movie/upcoming")
     suspend fun getUpcoming(): Response<UpcomingMoviesResponse>
+
+    @GET("movie/popular")
+    suspend fun getPopulat(): Response<PopularMovie>
 }

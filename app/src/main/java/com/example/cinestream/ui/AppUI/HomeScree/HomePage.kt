@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import coil3.compose.AsyncImage
 import com.example.cinestream.R
+import com.example.cinestream.data.Info.PopularMovie
 import com.example.cinestream.data.Info.Trending
 import com.example.cinestream.data.Info.UpcomingMovie
 import com.example.cinestream.data.Info.UpcomingMoviesResponse
@@ -91,6 +92,8 @@ fun HomePage(homeVM: HomeVM) {
     var response = homeVM.gettAllHomePageContent?.results
 
     var upcomingresponse = homeVM.gettAllUpcomingContent?.results
+
+    var popularresponse = homeVM.gettAllPopularContent
 
 
 
@@ -163,7 +166,14 @@ fun HomePage(homeVM: HomeVM) {
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                TopRecomendation()
+                LazyRow {
+                    items(popularresponse) { anime ->
+                        Column {
+                            TopRecomendation(anime)
+                        }
+                    }
+                }
+
 
                 Spacer(modifier = Modifier.height(7.dp))
 
@@ -254,7 +264,7 @@ fun HomePage(homeVM: HomeVM) {
 }
 
 @Composable
-fun TopRecomendation() {
+fun TopRecomendation(result: PopularMovie) {
 
     val image = ""
 
@@ -394,13 +404,15 @@ fun Trending(result: Trending) {
 @Composable
 fun Latest(result: UpcomingMovie) {
 
-    var poster = result.backdropPath
+    val poster = result.backdropPath?.let {
+        "https://image.tmdb.org/t/p/w500$it"
+    }
 
     Surface(
         modifier = Modifier
             .padding(horizontal = 10.dp, vertical = 4.dp)
             .height(290.dp)
-            .width(290.dp)
+            .width(200.dp)
     ) {
         Column() {
 
@@ -408,7 +420,8 @@ fun Latest(result: UpcomingMovie) {
                 model = poster,
                 contentDescription = null,
                 placeholder = painterResource(R.drawable.movie),
-                error = painterResource(R.drawable.movie)
+                error = painterResource(R.drawable.movie),
+//                modifier=Modifier.fillMaxSize()
             )
             Spacer(modifier=Modifier.padding(top=5.dp))
             Text(
