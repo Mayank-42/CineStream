@@ -1,6 +1,6 @@
 package com.example.cinestream.ui.AppUI.HomeScree
 
-import android.R.attr.font
+
 import android.app.Activity
 import android.content.ContextWrapper
 import android.content.pm.ActivityInfo
@@ -14,6 +14,7 @@ import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -24,10 +25,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,14 +47,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -62,6 +68,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
 import com.example.cinestream.R
 import com.example.cinestream.data.Info.PopularMovie
@@ -69,6 +76,9 @@ import com.example.cinestream.data.Info.Trending
 import com.example.cinestream.data.Info.UpcomingMovie
 import com.example.cinestream.data.Info.UpcomingMoviesResponse
 import com.example.cinestream.data.vm.HomeVM
+import kotlinx.coroutines.delay
+import java.util.LinkedList
+import java.util.Queue
 
 
 val Primary = Color(0xFFFF2A54)
@@ -94,6 +104,45 @@ fun HomePage(homeVM: HomeVM) {
     var upcomingresponse = homeVM.gettAllUpcomingContent?.results
 
     var popularresponse = homeVM.gettAllPopularContent?.results
+
+        val movies:Queue<PopularMovie> = LinkedList()
+    for (movie in popularresponse.orEmpty()) {
+        movies.offer(movie)
+    }
+
+    val moviess = remember {
+        mutableStateListOf<PopularMovie>()
+    }
+
+    LaunchedEffect(popularresponse) {
+        moviess.clear()
+        moviess.addAll(popularresponse.orEmpty())
+    }
+    LaunchedEffect(moviess.size) {
+        while (moviess.size > 1) {
+            delay(2000)
+
+            val firstMovie = moviess.removeAt(0)
+            moviess.add(firstMovie)
+        }
+    }
+
+//    val popularListState = rememberLazyListState()
+//
+//    LaunchedEffect(popularresponse?.size) {
+//        val movieCount = popularresponse?.size ?: 0
+//
+//        if (movieCount <= 1) return@LaunchedEffect
+//
+//        while (true) {
+//            delay(1000)
+//
+//            val nextIndex =
+//                (popularListState.firstVisibleItemIndex + 1) % movieCount
+//
+//            popularListState.animateScrollToItem(nextIndex)
+//        }
+//    }
 
 
 
@@ -166,13 +215,87 @@ fun HomePage(homeVM: HomeVM) {
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                LazyRow {
-                    items(popularresponse.orEmpty()) { anime ->
-                        Column {
-                            TopRecomendation(anime)
+//                LazyRow(state=popularListState) {
+//                    items(popularresponse.orEmpty()) { anime ->
+//                        Column {
+//                            TopRecomendation(anime)
+//                        }
+//                    }
+//                }
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(280.dp)
+//                        ,
+//                    contentAlignment = Alignment.Center
+//                ) {
+//                    for (index in moviess.indices.reversed()) {
+//                            val inset = index * 12
+//                            Box(
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+////                                    .offset(
+////                                        x = (index * 6).dp,
+////                                        y = (index * 8).dp
+////                                    )
+////                                    .offset(
+////
+////                                        x = -(index * 6).dp,
+////                                        y = -(index * 8).dp
+////                                    )
+//                                    .padding(
+//                                        horizontal = (index * 12).dp,
+//                                        vertical = (index * 8).dp
+//                                    )
+//                                    .zIndex((moviess.size - index).toFloat()),
+//
+//                            ) {
+//                                TopRecomendation(result = moviess.get(index))
+//                            }
+//                        }
+//                    }
+
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(280.dp),
+//                        .clip(RoundedCornerShape(24.dp))
+//                        .shadow(10.dp,ambientColor=Color.White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val visibleCount = minOf(3, moviess.size)
+
+                    for (index in ((visibleCount - 1) downTo 0).reversed() ){
+                        val depth = visibleCount - 1 - index
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    horizontal = (depth * 12).dp,
+                                    vertical = (depth * 12).dp
+                                )
+                                .zIndex((visibleCount - index).toFloat())
+                                .clip(RoundedCornerShape(24.dp))
+                                .then(
+                                    if (depth > 0) {
+                                        Modifier.blur(6.dp)
+                                    } else {
+                                        Modifier
+                                    }
+                                )
+
+                        ) {
+                            TopRecomendation(
+                                result = moviess[index]
+                            )
                         }
                     }
                 }
+
+
+
 
 
                 Spacer(modifier = Modifier.height(7.dp))
@@ -264,22 +387,30 @@ fun HomePage(homeVM: HomeVM) {
 }
 
 @Composable
-fun TopRecomendation(result: PopularMovie) {
+fun TopRecomendation(result: PopularMovie,isBlurred: Boolean = false) {
 
-    val image = result.backdropPath.let{
+    val image = result.backdropPath?.let{
         "https://image.tmdb.org/t/p/w500$it"
     }
 
     Surface(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .padding(20.dp)
+            ,
+        color = Color.White.copy(alpha = 0.12f),
+        shape = RoundedCornerShape(24.dp)
     ) {
         AsyncImage(
             model = image,
             contentDescription = null,
             placeholder = painterResource(R.drawable.movie),
-            error = painterResource(R.drawable.movie)
+            error = painterResource(R.drawable.movie),
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxSize()
+                .blur(if (isBlurred) 6.dp else 0.dp)
+                .height(220.dp)
         )
 
         Box(
@@ -296,7 +427,7 @@ fun TopRecomendation(result: PopularMovie) {
                         .padding(start = 15.dp)
                 ) {
                     Text(
-                        text = "2024",
+                        text = result.releaseDate.substringBefore("-"),
                         color = TextSecondary,
                         fontWeight = FontWeight.ExtraBold
                     )
@@ -319,7 +450,7 @@ fun TopRecomendation(result: PopularMovie) {
                 }
 
                 Text(
-                    text = "Dune:Part Two",
+                    text = result.title,
                     fontSize = 30.sp,
                     color = TextPrimary,
                     modifier = Modifier.shadow(10.dp)
@@ -797,6 +928,15 @@ fun WebView(onClose: () -> Unit) {
         }
     }
 }
+@Composable
+fun slideMovies(mov: Queue<PopularMovie>){
+    LaunchedEffect(mov) {
+        mov.offer(mov.poll())
+        delay(1000)
+
+    }
+}
+
 
 
 //@Preview(showBackground = true, showSystemUi = true)

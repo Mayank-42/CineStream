@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     homeVM.gettALltheData()
                     homeVM.gettUpcomming()
+                    homeVM.gettPopular()
                 }
 
                 HomePage(homeVM = homeVM)
