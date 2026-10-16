@@ -1,6 +1,7 @@
 package com.example.cinestream.data.Repo
 
 import com.example.cinestream.data.Info.PopularMovie
+import com.example.cinestream.data.Info.PopularMoviesResponse
 import com.example.cinestream.data.Info.Trending
 import com.example.cinestream.data.Info.TrendingResponse
 import com.example.cinestream.data.Info.UpcomingMoviesResponse
@@ -30,7 +31,7 @@ class Repository(private val getMessage: Api ) {
             ?: throw Exception("Home response is empty")
     }
 
-    suspend fun getPopular(): PopularMovie{
+    suspend fun getPopular(): PopularMoviesResponse{
         val response= getMessage.getPopulat()
         if (!response.isSuccessful) {
             throw Exception("API error: ${response.code()}\n ${response.body()}")

@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.cinestream.data.Info.PopularMovie
+import com.example.cinestream.data.Info.PopularMoviesResponse
 import com.example.cinestream.data.Info.Trending
 import com.example.cinestream.data.Info.TrendingResponse
 import com.example.cinestream.data.Info.UpcomingMoviesResponse
@@ -26,7 +27,7 @@ class HomeVM(private val repo: Repository)
         private set
     var gettAllUpcomingContent by mutableStateOf<UpcomingMoviesResponse?>(null)
         private set
-    var gettAllPopularContent by mutableStateOf<PopularMovie?>(null)
+    var gettAllPopularContent by mutableStateOf<PopularMoviesResponse?>(null)
         private set
     var errorMessage by mutableStateOf<String?>(null)
         private set

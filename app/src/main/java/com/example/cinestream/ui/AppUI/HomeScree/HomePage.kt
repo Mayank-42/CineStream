@@ -93,7 +93,7 @@ fun HomePage(homeVM: HomeVM) {
 
     var upcomingresponse = homeVM.gettAllUpcomingContent?.results
 
-    var popularresponse = homeVM.gettAllPopularContent
+    var popularresponse = homeVM.gettAllPopularContent?.results
 
 
 
@@ -167,7 +167,7 @@ fun HomePage(homeVM: HomeVM) {
                 Spacer(modifier = Modifier.height(10.dp))
 
                 LazyRow {
-                    items(popularresponse) { anime ->
+                    items(popularresponse.orEmpty()) { anime ->
                         Column {
                             TopRecomendation(anime)
                         }
@@ -266,7 +266,9 @@ fun HomePage(homeVM: HomeVM) {
 @Composable
 fun TopRecomendation(result: PopularMovie) {
 
-    val image = ""
+    val image = result.backdropPath.let{
+        "https://image.tmdb.org/t/p/w500$it"
+    }
 
     Surface(
         modifier = Modifier
